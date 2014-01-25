@@ -1,0 +1,54 @@
+<%@ import val today: String %>
+<%@ import val categories: List[String] %>
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Add Transaction</title>
+    <script src="scripts/jquery-2.0.3.min.js"></script>
+    <script src="scripts/jquery-ui-1.10.3.custom.min.js"></script>
+
+    <link rel="stylesheet" href="styles/jquery-ui.css" />
+    <link rel="stylesheet" href="styles/jquery.ui.theme.css" />
+    
+    <script type="text/javascript">
+      jQuery(document).ready(function() {
+        jQuery("#transDate").datepicker();
+        jQuery("#category").change(function() {
+          var value = jQuery("#category").val();
+          console.log(value);
+          if (value == "newCategory") {
+            jQuery("#newCategory").show();
+          } else {
+            jQuery("#newCategory").hide();
+          }
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <form action="/add" method="post">
+      <label>Date: </label>
+      <input value="${today}" id="transDate" type="text" name="transDate" />
+      <br />
+      <label>Amount: </label>
+      <input type="text" name="amount" id="amount" />
+      <br />
+      <label>Category: </label>
+      <select name="category" id="category">
+      #for (category <- categories)
+        <option value="${category}">${category}</option>
+      #end
+        <option value="newCategory">Other</option>
+      </select>
+      &nbsp;
+      <input type="text" name="newCategory" id="newCategory" style="display: none;" />
+      <br />
+      <label>Description: </label>
+      <input type="text" name="description" id="amount" />
+      <br />
+      <input type="submit" value="Add transaction" />
+    </form>
+  </body>
+</html>

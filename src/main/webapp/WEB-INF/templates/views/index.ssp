@@ -1,0 +1,186 @@
+<%
+  import com.aderusha.financetracker.dao.Transaction
+  import java.util.Formatter
+%>
+
+<%@ import val transactions: List[Transaction] %>
+<%@ import val pieData: List[(String, Int, String)] %>
+<%@ import val fromDate: String %>
+<%@ import val toDate: String %>
+
+<%
+  val pieDataValues: List[String] = pieData.map { case (_, value, color) => "{value: %d, color: '%s'}".format(value, color) } 
+  val showBoxes = false
+%>
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Data</title>
+    <script src="scripts/jquery-2.0.3.min.js"></script>
+    <script src="scripts/Chart.min.js"></script>
+    <script src="scripts/jquery-ui-1.10.3.custom.min.js"></script>
+
+    <link rel="stylesheet" href="styles/jquery-ui.css" />
+    <link rel="stylesheet" href="styles/jquery.ui.theme.css" />
+    <style type="text/css">
+      body {
+        padding: 15px;
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+      }
+
+      #linkSection {
+        #if (showBoxes) background-color: purple; #end
+/*
+	-moz-box-shadow: 0 0 5px 5px #CCC;
+	-webkit-box-shadow: 0 0 5px 5px #CCC;
+	box-shadow: 0 0 5px 5px #CCC;
+*/
+      }
+
+      #filterSection {
+        #if (showBoxes) background-color: red; #end
+	padding: 3px;
+	text-align: center;
+	margin-bottom: 15px;
+	-moz-box-shadow: 0 0 5px 5px #CCC;
+	-webkit-box-shadow: 0 0 5px 5px #CCC;
+	box-shadow: 0 0 5px 5px #CCC;
+      }
+
+      #dataSection {
+        #if (showBoxes) background-color: yellow; #end
+      }
+
+      #chartSection {
+        float: left;
+        margin-right: 25px;
+        #if (showBoxes) background-color: blue; #end
+        height: 400px;
+        padding-right: 70px;
+        padding-left: 10px;
+        -moz-box-shadow: 0 0 5px 5px #CCC;
+        -webkit-box-shadow: 0 0 5px 5px #CCC;
+        box-shadow: 0 0 5px 5px #CCC;
+      }
+
+      #chartSection #colorChart {
+        float: right;
+        margin-top: 125px;
+        margin-left: 20px;
+        padding-right: 10px;
+      }
+
+      #chartSection #colorChart .colorBox{
+      border: 1px solid #000000;
+      height: 15px;
+      width: 40px;
+      float: left;
+      }
+
+      #chartSection #colorChart ul {
+        padding: 5px;
+        margin: 0;
+        list-style: none;
+      }
+
+      #chartSection #colorChart ul li {
+        margin-bottom: 5px;
+      }
+
+      #tableSection {
+        overflow-y: scroll;
+        height: 400px;
+        #if (showBoxes) background-color: green; #end
+        -moz-box-shadow: 0 0 5px 5px #CCC;
+        -webkit-box-shadow: 0 0 5px 5px #CCC;
+        box-shadow: 0 0 5px 5px #CCC;
+      }
+      
+      #tableSection table {
+        width: 100%;
+      }
+      
+      #tableSection table td, #tableSection table th {
+        border-top: 1px solid #CCC;
+        border-bottom: 1px solid #CCC;
+        padding: 5px;
+        text-align: left;
+      }
+    </style>
+    
+    <script type="text/javascript">
+      jQuery(document).ready(function() {
+        var data = [<%= pieDataValues.mkString(",") %>];
+        var ctx = jQuery("#myChart").get(0).getContext("2d");
+        var myNewChart = new Chart(ctx).Pie(data)
+
+        jQuery("#toDate").datepicker();
+        jQuery("#fromDate").datepicker();
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="linkSection">
+      <a href="/add">Add Transaction</a>
+    </div>
+    <div id="filterSection">
+      <form action="/" method="get">
+        <label>From Date: </label>
+        <input type="text" name="fromDate" id="fromDate" value="${fromDate}" />
+        <label>To Date: </label>
+        <input type="text" name="toDate" id="toDate" value="${toDate}" />
+        <input type="submit" value="Display data" />
+      </form>
+    </div>
+    <div id="dataSection">
+      <div id="chartSection">
+        <canvas id="myChart" width="400" height="400"></canvas>
+        <div id="colorChart">
+          <ul>
+          #for (value <- pieData)
+            <li><span class="colorBox" style="background-color: ${value._3};"></span>&nbsp;${value._1}</li>
+          #end
+          </ul>
+        </div>
+        <div style="clear: both;"></div>
+      </div>
+
+      <div id="tableSection">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <th>Transaction Date</th>
+            <th>Amount</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th></th>
+            <th></th>
+          </tr>
+          #for (t <- transactions)
+          <tr>
+            <td>${t.transDate}</td>
+            <td>$${"%.2f".format(t.amount/100.0)}</td>
+            <td>${t.category}</td>
+            <td>${t.description}</td>
+            <td>
+              <form method="get" action="/edit">
+                <input type="hidden" name="id" value="${t.id}" />
+                <input type="submit" value="Edit" />
+              </form>
+            </td>
+            <td>
+              <form method="post" action="/delete">
+                <input type="hidden" name="id" value="${t.id}" />
+                <input type="submit" value="Delete" />
+            </form>
+            </td>
+          </tr>
+          #end
+        </table>
+      </div>
+
+      <div style="clear: both;"></div>
+    </div>
+  </body>
+</html>
